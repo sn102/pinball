@@ -3,15 +3,18 @@ import math
 
 #Create a class for the pinballs
 class ball(pygame.sprite.Sprite):
-    def __init__(self, radius, colour, position, velocity, acceleration, colliding, lives):
+    def __init__(self, radius, colour, position, velocity, acceleration, lives):
         pygame.sprite.Sprite.__init__(self)
         self.radius = radius
         self.colour = colour
         self.position = position
         self.velocity = velocity
         self.acceleration = acceleration
-        self.colliding = colliding
         self.lives = lives
+        
+        self.currentLine = []
+        self.currentObstacle = 0
+        self.inBlock = False
 
         #drawing
         self.image = pygame.Surface((2*radius,2*radius))
@@ -49,6 +52,10 @@ class ball(pygame.sprite.Sprite):
             angle = math.atan(ratio)
         return(angle)
 
+    def getVelocityMagnitude(self):
+        magnitude = self.velocity.magnitude()
+        return magnitude
+
     def getAccelerationAngle(self):
         if self.acceleration[1] == 0:
             angle = math.pi
@@ -57,8 +64,15 @@ class ball(pygame.sprite.Sprite):
             angle = math.atan(ratio)
         return(angle)
 
-    def isColliding(self):
-        return(self.colliding)
+    def getAccelerationMagnitude(self):
+        magnitude = self.acceleration.magnitude()
+        return magnitude
+
+    def getCurrentLine(self):
+        return(self.currentLine)
+
+    def getCurrentObstacle(self):
+        return(self.currentObstacle)
 
     #Setters
 
@@ -77,34 +91,33 @@ class ball(pygame.sprite.Sprite):
     def setColour(self, colour):
         self.colour = colour
 
-    def setColliding(self, colliding):
-        self.colliding = colliding
-        
+    def setCurrentLine(self, collideObjects):
+        self.currentLine = currentLine
+
+    
     #Methods
 
     def bounce(self, obstacle):
+        #lines
         line = obstacle.getCollisionSide(self.position)
-        normal = obstacle.getNormal(line)
+        previousLine = self.currentLine
+        normalisedSide = obstacle.normaliseSide(line)
         lineAngle = obstacle.getLineAngle(line)
+        normal = obstacle.getNormal(line, self.position)
+        depthVector = obstacle.getDepthVector(line, self)
+        depthMagnitude = depthVector.magnitude()
 
+        #velocity
         velocityAngle = self.getVelocityAngle()
-        angleDiffVelocity = lineAngle - velocityAngle
-        
-        accelerationAngle = self.getAccelerationAngle()
-        angleDiffAcceleration = lineAngle - accelerationAngle
+        speed = self.velocity.magnitude()
+        angleDiffVelocity = lineAngle + velocityAngle
+        appliedSpeedAway = speed * math.sin(angleDiffVelocity) + (10*depthMagnitude)
+        velocityAway = normal * appliedSpeedAway
 
-        if self.colliding == True:
-            newAcceleration = pygame.Vector2.magnitude(self.acceleration) * math.sin(angleDiffAcceleration)
-            self.acceleration -= normal * newAcceleration
-            newSpeed = pygame.Vector2.magnitude(self.velocity) * math.sin(angleDiffVelocity) * obstacle.bounce
-
-        if self.velocity.y > 10:
-            self.velocity -= normal * newSpeed
-        elif self.velocity.y < 10:
-            self.velocity += normal * newSpeed
-        if self.velocity.magnitude() < 10:
-            self.colliding = False
-        
+        #output
+        #self.position += depthVector
+        if normal.dot(self.velocity) < 0: #only bounce if velocity is facing side
+            self.velocity += velocityAway + (normal * obstacle.bounciness * 100)
 
     def update(self):
         self.image = pygame.Surface((2*self.radius,2*self.radius))
@@ -112,4 +125,3 @@ class ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.position))
         pygame.draw.circle(self.image, self.colour, (self.centre), self.radius)
         self.mask = pygame.mask.from_surface(self.image)
-        

@@ -2,30 +2,45 @@
 import pygame
 from obstacle import obstacle
 from ball import ball
+import time
 
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
+bouncing = False
 
+#init variables
 dt = 0
 collidetime = 1
 GRAVITY = pygame.Vector2(0, 2000)
 
 #create pinballs
-player1 = ball(50, "blue", (screen.get_width()/2, 720), pygame.Vector2(0, -2000), GRAVITY, False, 3)
+player1 = ball(50, "blue", (640, 200), pygame.Vector2(0,-500), GRAVITY, 1)
+player2 = ball(50, "purple", (screen.get_width()/2, 200), pygame.Vector2(-300, -500), GRAVITY, 1)
 pinballGroup = pygame.sprite.Group()
 pinballGroup.add(player1)
+#pinballGroup.add(player2)
 
 #create obstacles
-obstacle1 = obstacle([(100,60), (900,160), (1200,320)], 1, "red")
+obstacle1 = obstacle([[0, 600], [1280, 700], [1280, 1020], [0, 1020]], 0, "red")
+obstacle2 = obstacle([(1280,200), (500,720), (1280, 360)], 0, "green")
+obstacle3 = obstacle(([0,500], [1280,500], [650, 720]), 10, "orange")
 obstacleGroup = pygame.sprite.Group()
 obstacleGroup.add(obstacle1)
+obstacleGroup.add(obstacle2)
+#obstacleGroup.add(obstacle3)
 
-#debug print
-print(obstacle1.getVertices())
-print(obstacle1.getDrawnVertices())
+
+
+#collision check function
+def checkCollide(pinballGroup, obstacleGroup):
+    for ball in pinballGroup:
+        for obstacle in obstacleGroup:
+            if pygame.sprite.collide_mask(ball, obstacle):
+                ball.bounce(obstacle)
+                #time.sleep(1)
 
 while running:
     # poll for events
@@ -40,6 +55,7 @@ while running:
     #update obstacle sprites
     obstacleGroup.update()
     obstacleGroup.draw(screen)
+    print(obstacle1.getVertices())
 
     #update pinball sprites
     pinballGroup.update()
@@ -48,26 +64,21 @@ while running:
 
     #ball physics
     for ball in pinballGroup:
+        ball.setVelocity(ball.getVelocity() + (ball.getAcceleration() * dt))
+        ball.setPosition(ball.getPosition() + (ball.getVelocity() * dt))
         ball.setAcceleration(pygame.Vector2(GRAVITY))
-        ball.setVelocity(ball.getVelocity() + ball.getAcceleration() * dt)
-        ball.setPosition(ball.getPosition() + ball.getVelocity() * dt)
-    
 
     #collision
-    if pygame.sprite.groupcollide(pinballGroup, obstacleGroup, False, False, pygame.sprite.collide_mask):
-        player1.setColliding(True)
-        player1.bounce(obstacle1)
-    else:
-        player1.setAcceleration(pygame.Vector2(GRAVITY))
+    checkCollide(pinballGroup, obstacleGroup)
         
     #debug
     keys = pygame.key.get_pressed()
     if keys[pygame.K_1]:
-        obstacle1.shiftPoint(1, pygame.Vector2(50,-200)*dt)
+        print(player1.acceleration)
     if keys[pygame.K_2]:
-        obstacle1.shiftPoint(2, pygame.Vector2(50,-200)*dt)
+        obstacle1.translate(pygame.Vector2(0,-500) * dt)
     if keys[pygame.K_3]:
-        obstacle1.shiftPoint(3, pygame.Vector2(50,-200)*dt)
+        obstacle1.translate(pygame.Vector2(0,500) * dt)
     if keys[pygame.K_w]:
         print(player1.getAcceleration())
     
