@@ -1,5 +1,6 @@
 import pygame
 import math
+import geofuncs
 
 #Create a class for the pinballs
 class ball(pygame.sprite.Sprite):
@@ -97,27 +98,69 @@ class ball(pygame.sprite.Sprite):
     
     #Methods
 
-    def bounce(self, obstacle):
+    def bounceObstacle(self, obstacle):
         #lines
         line = obstacle.getCollisionSide(self.position)
         previousLine = self.currentLine
-        normalisedSide = obstacle.normaliseSide(line)
-        lineAngle = obstacle.getLineAngle(line)
-        normal = obstacle.getNormal(line, self.position)
+        normalisedSide = geofuncs.normaliseSide(line)
+        lineAngle = geofuncs.getLineAngle(line)
+        normal = geofuncs.getNormal(line, self.position)
+        interpRatio = geofuncs.getInterpolationRatio(line, self.position)
+        ballRatio = self.radius / geofuncs.getSideLength(line)
+        contactPoint = geofuncs.getClosestLinePoint(line, self.position)
+        obstacleSpeed = obstacle.velocity.magnitude()
+        obstacleSpeedToBall = 0
+        turnVelocity = pygame.Vector2(0,0)
+
+        #depth
         depthVector = obstacle.getDepthVector(line, self)
         depthMagnitude = depthVector.magnitude()
 
+        #obstacle velocity
+        if obstacleSpeed > 0:
+            obstacleVelocityLine = [contactPoint, [contactPoint[0] + obstacle.velocity.x, contactPoint[1] + obstacle.velocity.y]]
+            cosObstacleVelocityAngle = geofuncs.getCosAngleToPoint(obstacleVelocityLine, self.position)
+            obstacleSpeedToBall = obstacleSpeed * cosObstacleVelocityAngle
+                                
+
+        #turning
+        if obstacle.angularVelocity != 0:
+            turnVelocity = obstacle.getTurnVelocity(contactPoint, self.position, normal)
+            obstacleSpeedToBall = obstacleSpeedToBall + turnVelocity.magnitude()
+        
         #velocity
         velocityAngle = self.getVelocityAngle()
         speed = self.velocity.magnitude()
         angleDiffVelocity = lineAngle + velocityAngle
-        appliedSpeedAway = speed * math.sin(angleDiffVelocity) + (10*depthMagnitude)
-        velocityAway = normal * appliedSpeedAway
+        appliedSpeedAway = speed * math.sin(angleDiffVelocity)
+        velocityAway = normal * (appliedSpeedAway + obstacleSpeedToBall)
 
         #output
-        #self.position += depthVector
-        if normal.dot(self.velocity) < 0: #only bounce if velocity is facing side
-            self.velocity += velocityAway + (normal * obstacle.bounciness * 100)
+        self.velocity += depthVector * depthMagnitude
+        if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
+            self.velocity += velocityAway
+
+    def bounceBall(self, ball2):
+        #lines
+        vectorBetween = ball2.position - self.position
+        if vectorBetween.dot(self.velocity) > 0 or vectorBetween.dot(ball2.velocity) < 0:
+            vectorBetween = vectorBetween.normalize()
+            cosAngle = geofuncs.getCosAngleToPoint([self.position, self.position + self.velocity], ball2.position)
+            if cosAngle < 0:
+                cosAngle = geofuncs.getCosAngleToPoint([self.position, self.position - self.velocity], ball2.position)
+            appliedSpeed = self.velocity.magnitude() * cosAngle
+
+            cosAngle2 = geofuncs.getCosAngleToPoint([ball2.position, ball2.position + ball2.velocity], self.position)
+            if cosAngle2 < 0:
+                cosAngle2 = geofuncs.getCosAngleToPoint([ball2.position, ball2.position - ball2.velocity], self.position)
+            appliedSpeed2 = ball2.velocity.magnitude() * cosAngle2
+
+            appliedSpeedAvg = (appliedSpeed + appliedSpeed2) / 2
+            appliedVelocity = appliedSpeedAvg * vectorBetween
+
+            self.velocity -= 2 * appliedVelocity
+            ball2.velocity += 2 * appliedVelocity
+            print(appliedSpeedAvg)
 
     def update(self):
         self.image = pygame.Surface((2*self.radius,2*self.radius))

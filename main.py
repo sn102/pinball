@@ -1,46 +1,57 @@
 # Example file showing a circle moving on screen
+import math
 import pygame
+import time
 from obstacle import obstacle
 from ball import ball
-import time
+from newfunctions import convertStringToList
 
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
-bouncing = False
 
 #init variables
 dt = 0
-collidetime = 1
 GRAVITY = pygame.Vector2(0, 2000)
+unpressed = True
+unpressed2 = True
+debugList = []
+lineCount = 0
 
 #create pinballs
-player1 = ball(50, "blue", (640, 200), pygame.Vector2(0,-500), GRAVITY, 1)
-player2 = ball(50, "purple", (screen.get_width()/2, 200), pygame.Vector2(-300, -500), GRAVITY, 1)
+player1 = ball(50, "blue", (640, 200), pygame.Vector2(-300, 0), GRAVITY, 1)
+player2 = ball(50, "purple", (840, 100), pygame.Vector2(300, 500), GRAVITY, 1)
 pinballGroup = pygame.sprite.Group()
 pinballGroup.add(player1)
-#pinballGroup.add(player2)
+pinballGroup.add(player2)
 
 #create obstacles
-obstacle1 = obstacle([[0, 600], [1280, 700], [1280, 1020], [0, 1020]], 0, "red")
-obstacle2 = obstacle([(1280,200), (500,720), (1280, 360)], 0, "green")
-obstacle3 = obstacle(([0,500], [1280,500], [650, 720]), 10, "orange")
+machine = open("map.txt", "r")
 obstacleGroup = pygame.sprite.Group()
-obstacleGroup.add(obstacle1)
-obstacleGroup.add(obstacle2)
-#obstacleGroup.add(obstacle3)
+for line in machine:
+    line = line.strip()
+    line = line.split(".")
+    line[0] = convertStringToList(line[0])
+    line[1] = int(line[1])
+    obstacleGroup.add(obstacle(line[0], line[1], line[2]))
+machine.close()
 
 
 
 #collision check function
-def checkCollide(pinballGroup, obstacleGroup):
+def checkCollideObstacle(pinballGroup, obstacleGroup):
     for ball in pinballGroup:
         for obstacle in obstacleGroup:
             if pygame.sprite.collide_mask(ball, obstacle):
-                ball.bounce(obstacle)
-                #time.sleep(1)
+                ball.bounceObstacle(obstacle)
+
+def checkCollideBall(pinballGroup):
+    for ball in pinballGroup:
+        for ball2 in pinballGroup:
+            if pygame.sprite.collide_circle(ball, ball2) and ball != ball2:
+                ball.bounceBall(ball2)
 
 while running:
     # poll for events
@@ -55,7 +66,6 @@ while running:
     #update obstacle sprites
     obstacleGroup.update()
     obstacleGroup.draw(screen)
-    print(obstacle1.getVertices())
 
     #update pinball sprites
     pinballGroup.update()
@@ -69,18 +79,16 @@ while running:
         ball.setAcceleration(pygame.Vector2(GRAVITY))
 
     #collision
-    checkCollide(pinballGroup, obstacleGroup)
+    checkCollideObstacle(pinballGroup, obstacleGroup)
+    checkCollideBall(pinballGroup)
         
     #debug
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_1]:
-        print(player1.acceleration)
-    if keys[pygame.K_2]:
-        obstacle1.translate(pygame.Vector2(0,-500) * dt)
-    if keys[pygame.K_3]:
-        obstacle1.translate(pygame.Vector2(0,500) * dt)
-    if keys[pygame.K_w]:
-        print(player1.getAcceleration())
+
+
+    for obstacle in obstacleGroup:
+        obstacle.translate(obstacle.getVelocity()*dt)
+        obstacle.rotate(obstacle.angularVelocity * dt)
     
     # flip() the display to put your work on screen
     pygame.display.flip()
@@ -88,6 +96,6 @@ while running:
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-
     # independent physics.
-    dt = clock.tick(60) / 1000
+    dt = clock.tick(100) / 1000
 
 pygame.quit()
