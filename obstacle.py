@@ -16,7 +16,7 @@ class obstacle(pygame.sprite.Sprite):
 
         self.velocity = pygame.Vector2(0,0)
         self.angularVelocity = 0
-        self.turnPoint = [0,0]
+        self.turnPoint = pygame.Vector2(self.position)
         
     #Getters
 
@@ -127,11 +127,11 @@ class obstacle(pygame.sprite.Sprite):
 
     #Methods
 
-    def rotate(self, angleSpeed):
+    def rotate(self, dt):
         point = pygame.Vector2(self.turnPoint)
         for vertex in self.vertices:
             pointVertexVector = pygame.Vector2(vertex) - pygame.Vector2(point)
-            newVertex = pygame.Vector2(point + pointVertexVector.rotate_rad(angleSpeed))
+            newVertex = pygame.Vector2(point + pointVertexVector.rotate_rad(self.angularVelocity * dt))
             vertex[0] = newVertex[0]
             vertex[1] = newVertex[1]
         

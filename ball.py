@@ -4,18 +4,17 @@ import geofuncs
 
 #Create a class for the pinballs
 class ball(pygame.sprite.Sprite):
-    def __init__(self, radius, colour, position, velocity, acceleration, lives):
+    def __init__(self, radius, colour, position, velocity, acceleration, playerNo):
         pygame.sprite.Sprite.__init__(self)
         self.radius = radius
         self.colour = colour
         self.position = position
         self.velocity = velocity
         self.acceleration = acceleration
-        self.lives = lives
+        self.playerNo = playerNo
         
         self.currentLine = []
         self.currentObstacle = 0
-        self.inBlock = False
 
         #drawing
         self.image = pygame.Surface((2*radius,2*radius))
@@ -160,7 +159,6 @@ class ball(pygame.sprite.Sprite):
 
             self.velocity -= 2 * appliedVelocity
             ball2.velocity += 2 * appliedVelocity
-            print(appliedSpeedAvg)
 
     def update(self):
         self.image = pygame.Surface((2*self.radius,2*self.radius))
