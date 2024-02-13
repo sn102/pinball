@@ -3,7 +3,7 @@ import math
 import geofuncs
 
 class obstacle(pygame.sprite.Sprite):
-    def __init__(self, vertices, bounciness, colour):
+    def __init__(self, vertices, bounciness, colour, angularVelocity, scoreValue):
         #initialise Sprite superclass
         pygame.sprite.Sprite.__init__(self)
 
@@ -11,11 +11,13 @@ class obstacle(pygame.sprite.Sprite):
         self.vertices = list(vertices)
         self.bounciness = bounciness
         self.colour = colour
+        self.scoreValue = scoreValue
         self.position = self.getMidpoint()
         self.calcVertices = self.vertices + [self.vertices[0]] #start and end points are equal for calculations with physics
 
         self.velocity = pygame.Vector2(0,0)
-        self.angularVelocity = 0
+        self.angularVelocity = angularVelocity
+        self.angularDisplacement = 0
         self.turnPoint = pygame.Vector2(self.position)
         
     #Getters
@@ -32,6 +34,13 @@ class obstacle(pygame.sprite.Sprite):
     def getAngularVelocity(self):
         return(self.angularVelocity)
 
+    def getAngularDisplacement(self):
+        return(self.angularDisplacement)
+
+    def getScoreValue(self):
+        return(self.scoreValue)
+
+    
     def getLowest(self, xory): #returns minimum x or y coordinate
         if xory == "x" or xory == "X":
             xory = 0
@@ -127,13 +136,14 @@ class obstacle(pygame.sprite.Sprite):
 
     #Methods
 
-    def rotate(self, dt):
+    def rotate(self, turnSpeed):
         point = pygame.Vector2(self.turnPoint)
         for vertex in self.vertices:
             pointVertexVector = pygame.Vector2(vertex) - pygame.Vector2(point)
-            newVertex = pygame.Vector2(point + pointVertexVector.rotate_rad(self.angularVelocity * dt))
+            newVertex = pygame.Vector2(point + pointVertexVector.rotate_rad(turnSpeed))
             vertex[0] = newVertex[0]
             vertex[1] = newVertex[1]
+            self.angularDisplacement += turnSpeed
         
 
     def translate(self, vector): #translates shape

@@ -2,6 +2,9 @@ import pygame
 import math
 import geofuncs
 
+pygame.font.init()
+font = pygame.font.SysFont("arialblack", 30)
+
 #Create a class for the pinballs
 class ball(pygame.sprite.Sprite):
     def __init__(self, radius, colour, position, velocity, acceleration, playerNo):
@@ -12,6 +15,7 @@ class ball(pygame.sprite.Sprite):
         self.velocity = velocity
         self.acceleration = acceleration
         self.playerNo = playerNo
+        self.score = 0
         
         self.currentLine = []
         self.currentObstacle = 0
@@ -23,6 +27,10 @@ class ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=position)
         pygame.draw.circle(self.image, colour, (self.centre), radius)
         self.mask = pygame.mask.from_surface(self.image)
+
+        #score text
+        self.text = ("Player " + str(self.playerNo) + " score: " + str(self.score))
+        self.textSurf = font.render(self.text, False, "black")
         
     #Getters
 
@@ -74,6 +82,12 @@ class ball(pygame.sprite.Sprite):
     def getCurrentObstacle(self):
         return(self.currentObstacle)
 
+    def getPlayerNo(self):
+        return(self.playerNo)
+
+    def getTextSurf(self):
+        return(self.textSurf)
+
     #Setters
 
     def setRadius(self, radius):
@@ -93,6 +107,12 @@ class ball(pygame.sprite.Sprite):
 
     def setCurrentLine(self, collideObjects):
         self.currentLine = currentLine
+
+    def setScore(self, score):
+        self.score = score
+
+    def increaseScore(self, score):
+        self.score += score
 
     
     #Methods
@@ -135,7 +155,7 @@ class ball(pygame.sprite.Sprite):
         velocityAway = normal * (appliedSpeedAway + obstacleSpeedToBall)
 
         #output
-        self.velocity += depthVector * depthMagnitude
+        self.velocity += depthVector * (depthMagnitude + 10 * obstacle.bounciness)
         if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
             self.velocity += velocityAway
 
@@ -166,3 +186,7 @@ class ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.position))
         pygame.draw.circle(self.image, self.colour, (self.centre), self.radius)
         self.mask = pygame.mask.from_surface(self.image)
+
+        #score update
+        self.text = ("Player " + str(self.playerNo) + " score: " + str(self.score))
+        self.textSurf = font.render(self.text, False, "black")

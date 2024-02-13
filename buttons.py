@@ -23,7 +23,7 @@ class menuButton(pygame.sprite.Sprite):
         self.image.fill("green")
         self.rect = pygame.Rect(coord[0], coord[1], self.WIDTH, self.HEIGHT)
         pygame.draw.rect(self.image, colour, self.rect)
-        textSurf = font.render(text, False, "green")
+        textSurf = font.render(text, False, "black")
         self.image.blit(textSurf, (self.WIDTH - 100 * len(text), self.HEIGHT/2))
 
     #return rect

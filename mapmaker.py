@@ -34,7 +34,7 @@ while running:
     if mouse[2] and unpressed2:
         machine = open("map.txt", "a")
         print(mapList)
-        machine.write(str(mapList) + ".0.red\n")
+        machine.write(str(mapList) + ".0.red.0.0\n")
         mapList = []
         unpressed2 = False
         machine.close()
