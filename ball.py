@@ -88,6 +88,9 @@ class ball(pygame.sprite.Sprite):
     def getTextSurf(self):
         return(self.textSurf)
 
+    def getScore(self):
+        return(self.score)
+
     #Setters
 
     def setRadius(self, radius):
@@ -152,12 +155,13 @@ class ball(pygame.sprite.Sprite):
         speed = self.velocity.magnitude()
         angleDiffVelocity = lineAngle + velocityAngle
         appliedSpeedAway = speed * math.sin(angleDiffVelocity)
-        velocityAway = normal * (appliedSpeedAway + obstacleSpeedToBall)
+        velocityAway = normal * (appliedSpeedAway + obstacleSpeedToBall + obstacle.bounciness * 100)
 
         #output
-        self.velocity += depthVector * (depthMagnitude + 10 * obstacle.bounciness)
+        self.velocity += depthVector * depthMagnitude
         if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
             self.velocity += velocityAway
+            
 
     def bounceBall(self, ball2):
         #lines

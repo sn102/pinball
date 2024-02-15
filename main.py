@@ -1,4 +1,3 @@
-# Example file showing a circle moving on screen
 import math
 import pygame
 import time
@@ -7,13 +6,15 @@ from flipper import flipper
 from ball import ball
 import mapfuncs
 from buttons import menuButton
-from scorepoint import scorePoint
+from endScreen import endScreen
 
 # pygame setup
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont("arialblack", 30)
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
-running = True
+running = False
 
 #init variables
 dt = 0
@@ -21,18 +22,14 @@ unpressed = True
 unpressed2 = True
 debugList = []
 lineCount = 0
+endTimer = 60
+endText = ""
+inMenu = True
 
 #constants
 GRAVITY = pygame.Vector2(0, 2000)
 FLIPTIME = 0.2
-
-
-#create pinballs
-player1 = ball(50, "blue", (640, 200), pygame.Vector2(0, 0), GRAVITY, 1)
-player2 = ball(50, "purple", (840, 100), pygame.Vector2(300, 500), GRAVITY, 2)
-pinballGroup = pygame.sprite.Group()
-pinballGroup.add(player1)
-pinballGroup.add(player2)
+FLIPSPEED = 0.75 * math.pi
 
 #create obstacles
 machine = open("map.txt", "r")
@@ -48,32 +45,62 @@ for line in machine:
 machine.close()
 
 #create flippers
-P1FlipperL = flipper(1, [500,600], "left")
-P1FlipperR = flipper(1, [700, 700], "right")
+P1FlipperL = flipper(1, [150,470], "left")
+P1FlipperR = flipper(1, [850, 600], "right")
+
+P2FlipperL = flipper(2, [430,600], "left")
+P2FlipperR = flipper(2, [1130,470], "right")
 
 obstacleGroup.add(P1FlipperL)
 obstacleGroup.add(P1FlipperR)
+obstacleGroup.add(P2FlipperL)
+obstacleGroup.add(P2FlipperR)
 
 flipperGroup = pygame.sprite.Group()
 flipperGroup.add(P1FlipperL)
 flipperGroup.add(P1FlipperR)
+flipperGroup.add(P2FlipperL)
+flipperGroup.add(P2FlipperR)
 
-#create score points
-#scoreGroup = pygame.sprite.Group()
-#scorePoint1 = scorePoint((100,500))
-#scoreGroup.add(scorePoint1)
+#create pinballs
+player1 = ball(40, "blue", (250, 250), pygame.Vector2(0, 0), GRAVITY, 1)
+player2 = ball(40, "purple", (1080, 200), pygame.Vector2(0, 0), GRAVITY, 2)
+pinballGroup = pygame.sprite.Group()
+pinballGroup.add(player1)
+pinballGroup.add(player2)
 
+#create menu buttons
+buttonGroup = pygame.sprite.Group()
+createGameButton = menuButton("red", "CREATE GAME", [screen.get_width()/2, 150])
+joinGameButton = menuButton("orange", "JOIN GAME", [screen.get_width()/2, 350])
+controlsButton = menuButton("green", "VIEW CONTROLS", [screen.get_width()/2, 550])
+buttonGroup.add(createGameButton)
+buttonGroup.add(joinGameButton)
+buttonGroup.add(controlsButton)
 
-#collision check function
+while inMenu:
+    screen.fill("black")
+    for event in pygame.event.get():
+        #clicking buttons
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mousePos = pygame.mouse.get_pos()
+            if joinGameButton.getRect().collidepoint(mousePos):
+                inMenu = False
+                running = True
+
+    buttonGroup.update()
+    buttonGroup.draw(screen)
+    pygame.display.flip()
+
+buttonGroup.empty()
+
+#main game loop
 
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
 
     #update obstacle sprites
@@ -93,6 +120,14 @@ while running:
         ball.setAcceleration(pygame.Vector2(GRAVITY))
 
         screen.blit(ball.getTextSurf(), (0, (50 * ball.getPlayerNo())))
+
+        #if ball falls out of range
+    if player1.getPosition().y > 1280 or player1.getPosition().y < 0:
+        player1.setPosition((250, 250))
+        player1.setVelocity(pygame.Vector2(0,0))
+    if player2.getPosition().y > 1280 or player2.getPosition().y < 0:
+        player2.setPosition((1080, 200))
+        player2.setVelocity(pygame.Vector2(0,0))
         
 
     #collision
@@ -107,8 +142,15 @@ while running:
 
     if keys[pygame.K_d] and P1FlipperR.getFlipState() == "":
         P1FlipperR.setFlipState("up")
-        P1FlipperL.setTime(FLIPTIME)
-        print(player1.score)
+        P1FlipperR.setTime(FLIPTIME)
+
+    if keys[pygame.K_LEFT] and P2FlipperL.getFlipState() == "":
+        P2FlipperL.setFlipState("up")
+        P2FlipperL.setTime(FLIPTIME)
+
+    if keys[pygame.K_RIGHT] and P2FlipperR.getFlipState() == "":
+        P2FlipperR.setFlipState("up")
+        P2FlipperR.setTime(FLIPTIME)
 
 
     for obstacle in obstacleGroup:
@@ -118,41 +160,47 @@ while running:
     #flipper rotation
     for flipper in flipperGroup:
         #change flip direction depending on side
-        if flipper.getLeftRight() == "left":
-            multiplier = -1
+        if flipper.getFlipState != "":
+            if flipper.getLeftRight() == "left":
+                multiplier = -1
+            else:
+                multiplier = 1
+            
+            if flipper.getFlipState() == "up":
+                if flipper.getTime() > 0:
+                    flipper.setAngularVelocity(multiplier * FLIPSPEED)
+                    turnSpeed = flipper.getAngularVelocity()
+                    flipper.rotate(turnSpeed * dt)
+                    flipper.setTime(flipper.getTime() - dt)
+                else:
+                    flipper.setTime(FLIPTIME)
+                    flipper.setFlipState("down")
+
+            elif flipper.getFlipState() == "down":
+                if -1 * multiplier * flipper.getAngularDisplacement() < 0:
+                    flipper.setAngularVelocity(multiplier * -FLIPSPEED)
+                    turnSpeed = flipper.getAngularVelocity()
+                    flipper.rotate(turnSpeed * dt)
+                else:
+                    flipper.setAngularVelocity(0)
+                    flipper.setFlipState("")
+
+    #timer
+    if endTimer >= 0:
+        endTimer -= dt
+        timerText = ("Time left: " + str(math.floor(endTimer)))
+        timerTextSurf = font.render(timerText, False, "black")
+        screen.blit(timerTextSurf, (1000, 0))
+    else:
+        if endText == "":
+            endText = endScreen(pinballGroup)
         else:
-            multiplier = 1
-        
-        if flipper.getFlipState() == "up":
-            if flipper.getTime() > 0:
-                flipper.setAngularVelocity(multiplier * math.pi)
-                turnSpeed = flipper.getAngularVelocity()
-                flipper.rotate(turnSpeed * dt)
-                flipper.setTime(flipper.getTime() - dt)
-            else:
-                flipper.setTime(FLIPTIME)
-                flipper.setFlipState("down")
-
-        elif flipper.getFlipState() == "down":
-            if -1 * multiplier * flipper.getAngularDisplacement() < 0:
-                flipper.setAngularVelocity(multiplier * -math.pi)
-                turnSpeed = flipper.getAngularVelocity()
-                flipper.rotate(turnSpeed * dt)
-            else:
-                flipper.setAngularVelocity(0)
-                flipper.setFlipState("")
-
-    #score
-    #scoreGroup.update()
-    #scoreGroup.draw(screen)
+            endTextSurf = font.render(endText, False, "black")
+            screen.blit(endTextSurf, (screen.get_width()/2-100, screen.get_height()/2))
 
         
-    # flip() the display to put your work on screen
     pygame.display.flip()
-
-    # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
-    # independent physics.
-    dt = clock.tick(100) / 1000
+    dt = clock.tick(1000) / 1000
 
 pygame.quit()
+
