@@ -7,6 +7,9 @@ from ball import ball
 import mapfuncs
 from buttons import menuButton
 from endScreen import endScreen
+#from server import serverGame
+#from client import clientGame
+from menu import *
 
 # pygame setup
 pygame.init()
@@ -14,7 +17,7 @@ pygame.font.init()
 font = pygame.font.SysFont("arialblack", 30)
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
-running = False
+running = True
 
 #init variables
 dt = 0
@@ -25,11 +28,20 @@ lineCount = 0
 endTimer = 60
 endText = ""
 inMenu = True
+mainMenu = True
+joinGameMenu = False
 
 #constants
 GRAVITY = pygame.Vector2(0, 2000)
 FLIPTIME = 0.2
 FLIPSPEED = 0.75 * math.pi
+
+#open menu which returns socket
+#playerType = menu(screen)
+#if playerType == "host":
+    #hostSetup()
+#else:
+    #clientSetup()
 
 #create obstacles
 machine = open("map.txt", "r")
@@ -69,30 +81,7 @@ pinballGroup = pygame.sprite.Group()
 pinballGroup.add(player1)
 pinballGroup.add(player2)
 
-#create menu buttons
-buttonGroup = pygame.sprite.Group()
-createGameButton = menuButton("red", "CREATE GAME", [screen.get_width()/2, 150])
-joinGameButton = menuButton("orange", "JOIN GAME", [screen.get_width()/2, 350])
-controlsButton = menuButton("green", "VIEW CONTROLS", [screen.get_width()/2, 550])
-buttonGroup.add(createGameButton)
-buttonGroup.add(joinGameButton)
-buttonGroup.add(controlsButton)
 
-while inMenu:
-    screen.fill("black")
-    for event in pygame.event.get():
-        #clicking buttons
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mousePos = pygame.mouse.get_pos()
-            if joinGameButton.getRect().collidepoint(mousePos):
-                inMenu = False
-                running = True
-
-    buttonGroup.update()
-    buttonGroup.draw(screen)
-    pygame.display.flip()
-
-buttonGroup.empty()
 
 #main game loop
 

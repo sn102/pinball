@@ -1,50 +1,75 @@
-import math
 import pygame
-from buttons import menuButton
+from buttons import *
+import socket
+#from client import clientGame
+#from server import serverGame
 
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-dt = 0
-
-#menu buttons
-buttonGroup = pygame.sprite.Group()
-singlePlayButton = menuButton("red", "SINGLE PLAYER GAME", [screen.get_width()/2, 150])
-multiPlayButton = menuButton("orange", "MULTI PLAYER GAME", [screen.get_width()/2, 350])
-controlsButton = menuButton("green", "SET CONTROLS", [screen.get_width()/2, 550])
-buttonGroup.add(singlePlayButton)
-buttonGroup.add(multiPlayButton)
-buttonGroup.add(controlsButton)
-
-
-while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        #clicking buttons
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mousePos = pygame.mouse.get_pos()
-            for button in buttonGroup:
-                if button.getRect().collidepoint(mousePos):
-                    print("yaya")
-
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("black")
-
-    buttonGroup.update()
-    buttonGroup.draw(screen)
+def menu(screen):
+    #init variables
+    inMenu = True
+    mainMenu = True
+    joinGameMenu = True
+    textInput = ""
+    playerData = ["", 0]
     
-    # flip() the display to put your work on screen
-    pygame.display.flip()
+    #create menu buttons
 
-    # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
-    # independent physics.
-    dt = clock.tick(100) / 1000
+    createGameButton = menuButton("red", "CREATE GAME", [screen.get_width()/2, 150])
+    joinGameButton = menuButton("orange", "JOIN GAME", [screen.get_width()/2, 350])
+    controlsButton = menuButton("green", "VIEW CONTROLS", [screen.get_width()/2, 550])
+    enterTextButton = menuButton("orange", textInput, [screen.get_width()/2, screen.get_height()/2])
+    ipText = menuButton("black", "ENTER HOST ADDRESS", [screen.get_width()/2, 200])
 
-pygame.quit()
+    buttonGroup = pygame.sprite.Group()
+    buttonGroup.add(createGameButton)
+    buttonGroup.add(joinGameButton)
+    buttonGroup.add(controlsButton)
+    
+    while inMenu:
+        if mainMenu:
+            screen.fill("black")
+            for event in pygame.event.get():
+                #clicking buttons
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mousePos = pygame.mouse.get_pos()
+                    if joinGameButton.getRect().collidepoint(mousePos):
+                        mainMenu = False
+                        joinGameMenu = True
+
+                        #replace buttons
+                        buttonGroup.empty()
+                        buttonGroup.add(enterTextButton)
+                        buttonGroup.add(ipText)
+                        print("wahoo")
+
+                    elif createGameButton.getRect().collidepoint(mousePos):
+                        playerType = "host"
+                        return(playerType)
+                        
+                if event.type == pygame.QUIT:
+                    inMenu = False
+                    running = False
+                    
+        if joinGameMenu:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    inMenu = False
+                    joinGameMenu = False
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        textInput = textInput[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        playerType = "client"
+                        ipText.setText("CONNECTING...")
+                        return(playerType)
+                    else:
+                        textInput += event.unicode
+
+                    enterTextButton.setText(textInput)
+                    
+        buttonGroup.update()
+        buttonGroup.draw(screen)
+        pygame.display.flip()
+
+    buttonGroup.empty()

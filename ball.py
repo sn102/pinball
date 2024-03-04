@@ -161,6 +161,7 @@ class ball(pygame.sprite.Sprite):
         self.velocity += depthVector * depthMagnitude
         if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
             self.velocity += velocityAway
+            self.increaseScore(obstacle.getScoreValue()) # change score
             
 
     def bounceBall(self, ball2):

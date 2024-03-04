@@ -20,9 +20,6 @@ def getCosAngleToPoint(line, point): #this finds a different angle than getCosAn
     return(cosA)
 
 def getInterpolationRatio(line, ballPos):
-        #vectorCoord1 = pygame.Vector2((line[0][0], line[0][1]))
-        #vectorCoord2 = pygame.Vector2((line[1][0], line[1][1]))
-        #vectorLine = vectorCoord2 - vectorCoord1
         vectorBall = pygame.Vector2(ballPos)
         cosAngleToBall = getCosAngleToPoint(line, ballPos)
         distToBall = getSideLength([line[0], ballPos])

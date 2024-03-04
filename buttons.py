@@ -24,14 +24,18 @@ class menuButton(pygame.sprite.Sprite):
         self.rect = pygame.Rect(coord[0], coord[1], self.WIDTH, self.HEIGHT)
         pygame.draw.rect(self.image, colour, self.rect)
         textSurf = font.render(text, False, "black")
-        self.image.blit(textSurf, (self.WIDTH - 100 * len(text), self.HEIGHT/2))
+        self.image.blit(textSurf, (0, self.HEIGHT/2))
 
-    #return rect
+    #getters
     def getRect(self):
         return(self.rect)
+
+    #setters
+    def setText(self, text):
+        self.text = text
 
     def update(self):
         pygame.draw.rect(self.image, self.colour, (0, 0, self.WIDTH, self.HEIGHT))
         textSurf = font.render(self.text, False, "white")
-        self.image.blit(textSurf, (self.WIDTH / len(self.text), self.HEIGHT/2))
+        self.image.blit(textSurf, (0, self.HEIGHT/2))
         

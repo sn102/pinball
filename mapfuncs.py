@@ -19,7 +19,6 @@ def checkCollideObstacle(pinballGroup, obstacleGroup):
         for obstacle in obstacleGroup:
             if pygame.sprite.collide_mask(ball, obstacle):
                 ball.bounceObstacle(obstacle)
-                ball.increaseScore(obstacle.getScoreValue())
 
 
 def checkCollideBall(pinballGroup):
@@ -27,4 +26,3 @@ def checkCollideBall(pinballGroup):
         for ball2 in pinballGroup:
             if pygame.sprite.collide_circle(ball, ball2) and ball != ball2:
                 ball.bounceBall(ball2)
-
