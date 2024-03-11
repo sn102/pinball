@@ -21,15 +21,6 @@ def serverGame():
     FLIPTIME = 0.2
     FLIPSPEED = 0.75 * math.pi
     TIMERSTART = 60
-    
-    
-    # pygame setup
-    pygame.init()
-    pygame.font.init()
-    font = pygame.font.SysFont("arialblack", 30)
-    screen = pygame.display.set_mode((1280, 720))
-    clock = pygame.time.Clock()
-    running = True
 
     #init variables
     dt = 0
@@ -37,11 +28,7 @@ def serverGame():
     unpressed2 = True
     debugList = []
     lineCount = 0
-    endTimer = TIMERSTART
     endText = ""
-    inMenu = True
-    mainMenu = True
-    joinGameMenu = False
 
 
 #-------NETWORKING START--------
@@ -58,12 +45,11 @@ def serverGame():
 
     while fileRead != "True":
         fileRead = connection.recv(4).decode("utf-8")
-        print(fileRead)
         if fileRead == "True":
-            print("yeehaw")
+            running = True
 
 #-------------------------------
-        
+         
 
     machine = open("map.txt", "r")
     obstacleGroup = pygame.sprite.Group()
@@ -73,7 +59,6 @@ def serverGame():
             clientReady = connection.recv(4).decode("utf-8")
         clientReady = "False"
         
-        print(line)
         connection.send(line.encode("utf-8"))
         line = line.strip()
         line = line.split(".")
@@ -84,11 +69,19 @@ def serverGame():
         #send line to client player
         #make obstacle
         obstacleGroup.add(obstacle(line[0], line[1], line[2], line[3], line[4]))
+        endTimer = TIMERSTART
     connection.send("False".encode("utf-8"))
     machine.close()
 
 
 #-----GAME SETUP-----
+
+    # pygame setup
+    pygame.init()
+    pygame.font.init()
+    font = pygame.font.SysFont("arialblack", 30)
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
 
     #create flippers
     P1FlipperL = flipper(1, [150,470], "left")
@@ -117,9 +110,8 @@ def serverGame():
 
 #--------------------
 
-
+    endTimer = TIMERSTART
     #main game loop
-
 
     while running:
         for event in pygame.event.get():
@@ -165,7 +157,7 @@ def serverGame():
                 screen.blit(ball.getTextSurf(), (0, (50 * ball.getPlayerNo())))
                     
 
-            #if ball falls out of range
+        #if ball falls out of range
         if player1.getPosition().y > 1280 or player1.getPosition().y < 0:
             player1.setPosition((250, 250))
             player1.setVelocity(pygame.Vector2(0,0))
@@ -231,7 +223,8 @@ def serverGame():
 
         #timer
         if endTimer >= 0:
-            endTimer -= dt
+            if len(dataReceived) > 0:
+                endTimer -= dt
             timerText = ("Time left: " + str(math.floor(endTimer)))
             timerTextSurf = font.render(timerText, False, "black")
             screen.blit(timerTextSurf, (1000, 0))
@@ -248,11 +241,10 @@ def serverGame():
                 screen.blit(endTextSurf, (screen.get_width()/2-100, screen.get_height()/2))
 
         #reset data received from client
-        dataReceived = ""
+        #dataReceived = ""
 
         pygame.display.flip()
         dt = clock.tick(1000) / 1000
 
     pygame.quit()
-
-serverGame()
+    return

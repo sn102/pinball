@@ -1,8 +1,8 @@
 import pygame
 from buttons import *
 import socket
-#from client import clientGame
-#from server import serverGame
+from client import clientGame
+from server import serverGame
 
 def menu(screen):
     #init variables
@@ -10,7 +10,6 @@ def menu(screen):
     mainMenu = True
     joinGameMenu = True
     textInput = ""
-    playerData = ["", 0]
     
     #create menu buttons
 
@@ -40,11 +39,13 @@ def menu(screen):
                         buttonGroup.empty()
                         buttonGroup.add(enterTextButton)
                         buttonGroup.add(ipText)
-                        print("wahoo")
 
                     elif createGameButton.getRect().collidepoint(mousePos):
-                        playerType = "host"
-                        return(playerType)
+                        createGameButton.setText("STARTING...")
+                        buttonGroup.update()
+                        buttonGroup.draw(screen)
+                        pygame.display.flip()
+                        serverGame()
                         
                 if event.type == pygame.QUIT:
                     inMenu = False
@@ -60,9 +61,7 @@ def menu(screen):
                     if event.key == pygame.K_BACKSPACE:
                         textInput = textInput[:-1]
                     elif event.key == pygame.K_RETURN:
-                        playerType = "client"
-                        ipText.setText("CONNECTING...")
-                        return(playerType)
+                        clientGame(textInput)
                     else:
                         textInput += event.unicode
 

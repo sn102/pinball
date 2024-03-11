@@ -10,7 +10,7 @@ from endScreen import endScreen
 from menu import *
 import pickle
 
-def clientGame():
+def clientGame(textInput):
     #import stuff -TEMPORARY
     from obstacle import obstacle
     from flipper import flipper
@@ -43,10 +43,10 @@ def clientGame():
 
     
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientSocket.connect((socket.gethostname(), 5050))
+    #192.168.1.109
+    clientSocket.connect((textInput, 5050))
 
     clientSocket.send("True".encode("utf-8"))
-    print("sent true")
     line = "True"
 
     obstacleGroup = pygame.sprite.Group()
@@ -223,5 +223,4 @@ def clientGame():
         dt = clock.tick(1000) / 1000
 
     pygame.quit()
-
-clientGame()
+    return
