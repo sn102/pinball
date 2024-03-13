@@ -18,11 +18,13 @@ def menu(screen):
     controlsButton = menuButton("green", "VIEW CONTROLS", [screen.get_width()/2, 550])
     enterTextButton = menuButton("orange", textInput, [screen.get_width()/2, screen.get_height()/2])
     ipText = menuButton("black", "ENTER HOST ADDRESS", [screen.get_width()/2, 200])
+    hostNameText = menuButton("black", "HOSTNAME: " +str(socket.gethostname()), [screen.get_width()/2, 50])
 
     buttonGroup = pygame.sprite.Group()
     buttonGroup.add(createGameButton)
     buttonGroup.add(joinGameButton)
     buttonGroup.add(controlsButton)
+    buttonGroup.add(hostNameText)
     
     while inMenu:
         if mainMenu:
@@ -41,11 +43,13 @@ def menu(screen):
                         buttonGroup.add(ipText)
 
                     elif createGameButton.getRect().collidepoint(mousePos):
-                        createGameButton.setText("STARTING...")
+                        createGameButton.setText("ANY KEY TO CANCEL")
                         buttonGroup.update()
                         buttonGroup.draw(screen)
                         pygame.display.flip()
                         serverGame()
+                        #if cancelled
+                        createGameButton.setText("CREATE GAME")
                         
                 if event.type == pygame.QUIT:
                     inMenu = False

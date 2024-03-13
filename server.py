@@ -29,6 +29,7 @@ def serverGame():
     debugList = []
     lineCount = 0
     endText = ""
+    connecting = True
 
 
 #-------NETWORKING START--------
@@ -36,15 +37,27 @@ def serverGame():
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serverSocket.bind((socket.gethostname(), 5050))
     serverSocket.listen(1024)
-    connection, address = serverSocket.accept()
-    print("connected to ", address)
+    serverSocket.settimeout(1)
 
+    while connecting:
+        connecting = False
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                return
+        try:
+            connection, address = serverSocket.accept()
+        except:
+            connecting = True
+
+
+        
     #init variables
     fileRead = "False"
     clientReady = "False"
 
     while fileRead != "True":
         fileRead = connection.recv(4).decode("utf-8")
+        print("connected to ", address)
         if fileRead == "True":
             running = True
 
@@ -121,7 +134,10 @@ def serverGame():
     #---------NETWORKING------------
 
         #receive data from client
-        dataReceived = connection.recv(1024).decode("utf-8")
+        try:
+            dataReceived = connection.recv(1024).decode("utf-8")
+        except:
+            return
         
         #send game data to client
         player1Data = [player1.getPosition(), player1.getVelocity(), player1.getScore()]
