@@ -34,6 +34,9 @@ class menuButton(pygame.sprite.Sprite):
     def setText(self, text):
         self.text = text
 
+    def setColour(self, colour):
+        self.colour = colour
+
     def update(self):
         pygame.draw.rect(self.image, self.colour, (0, 0, self.WIDTH, self.HEIGHT))
         textSurf = font.render(self.text, False, "white")

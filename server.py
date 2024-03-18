@@ -7,10 +7,9 @@ from ball import ball
 import mapfuncs
 from buttons import menuButton
 from endScreen import endScreen
-from menu import *
 import pickle
 
-def serverGame():
+def serverGame(controls):
     #import stuff -TEMPORARY
     from obstacle import obstacle
     from flipper import flipper
@@ -188,11 +187,11 @@ def serverGame():
             
         #flipper controls
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and P1FlipperL.getFlipState() == "":
+        if keys[controls[0]] and P1FlipperL.getFlipState() == "":
             P1FlipperL.setFlipState("up")
             P1FlipperL.setTime(FLIPTIME)
 
-        if keys[pygame.K_d] and P1FlipperR.getFlipState() == "":
+        if keys[controls[1]] and P1FlipperR.getFlipState() == "":
             P1FlipperR.setFlipState("up")
             P1FlipperR.setTime(FLIPTIME)
 

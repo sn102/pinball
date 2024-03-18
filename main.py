@@ -7,8 +7,6 @@ from ball import ball
 import mapfuncs
 from buttons import menuButton
 from endScreen import endScreen
-#from server import serverGame
-#from client import clientGame
 from menu import *
 
 # pygame setup

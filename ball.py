@@ -162,10 +162,10 @@ class ball(pygame.sprite.Sprite):
         if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
             self.velocity += velocityAway
             self.increaseScore(obstacle.getScoreValue()) # change score
-
-        #prevent ball from going too far inside obstacle
-        if depthMagnitude > self.radius:
-            self.position -= self.velocity
+            #prevent ball from going too far inside obstacle
+            if (self.position - contactPoint).dot(normal) < 1:
+                self.position = contactPoint
+                self.position -= self.velocity
             
 
     def bounceBall(self, ball2):

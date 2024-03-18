@@ -7,19 +7,18 @@ from ball import ball
 import mapfuncs
 from buttons import menuButton
 from endScreen import endScreen
-from menu import *
 import pickle
 
-def clientGame(textInput):
+def clientGame(textInput, controls):
     #import stuff -TEMPORARY
     from obstacle import obstacle
     from flipper import flipper
     from ball import ball
 
     # pygame setup
-    pygame.init()
-    pygame.font.init()
-    font = pygame.font.SysFont("arialblack", 30)
+    #pygame.init()
+    #pygame.font.init()
+    #font = pygame.font.SysFont("arialblack", 30)
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     running = True
@@ -159,10 +158,10 @@ def clientGame(textInput):
 
         #flipper controls
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
+        if keys[controls[0]]:
             clientSocket.send("L".encode("utf-8"))
 
-        elif keys[pygame.K_d]:
+        elif keys[controls[1]]:
             clientSocket.send("R".encode("utf-8"))
 
         else:
