@@ -1,3 +1,5 @@
+#functions related to loading the map
+
 import pygame
 
 def convertStringToList(string):

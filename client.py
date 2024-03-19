@@ -1,27 +1,27 @@
-import math
+#module for client game
+
 import pygame
-import time
+import mapfuncs
+from endScreen import endScreen
+from buttons import *
+import socket
+from client import *
+from server import *
 from obstacle import obstacle
 from flipper import flipper
 from ball import ball
-import mapfuncs
-from buttons import menuButton
-from endScreen import endScreen
 import pickle
 
 def clientGame(textInput, controls):
-    #import stuff -TEMPORARY
+
     from obstacle import obstacle
     from flipper import flipper
     from ball import ball
 
-    # pygame setup
-    #pygame.init()
-    #pygame.font.init()
-    #font = pygame.font.SysFont("arialblack", 30)
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     running = True
+    connected = True
 
     #init variables
     dt = 0
@@ -90,7 +90,7 @@ def clientGame(textInput, controls):
 
     #create pinballs
     player1 = ball(40, "blue", (250, 250), pygame.Vector2(0, 0), GRAVITY, 1)
-    player2 = ball(40, "purple", (1030, 250), pygame.Vector2(0, 0), GRAVITY, 2)
+    player2 = ball(40, "red", (1030, 250), pygame.Vector2(0, 0), GRAVITY, 2)
     pinballGroup = pygame.sprite.Group()
     pinballGroup.add(player1)
     pinballGroup.add(player2)
@@ -111,8 +111,14 @@ def clientGame(textInput, controls):
     #---------NETWORKING------------
         
         #client receives game data and unpickles it
-        receivedGameData = clientSocket.recv(1024)
-        receivedGameData = pickle.loads(receivedGameData)
+        if connected:
+            try:
+                receivedGameData = clientSocket.recv(1024)
+                receivedGameData = pickle.loads(receivedGameData)
+            except:
+                connected = False
+                endTimer = -1
+                endText = "Player 1 disconnected"
 
         #update player 1 ball
         player1.setPosition(receivedGameData[0][0])
@@ -159,13 +165,28 @@ def clientGame(textInput, controls):
         #flipper controls
         keys = pygame.key.get_pressed()
         if keys[controls[0]]:
-            clientSocket.send("L".encode("utf-8"))
+            try:
+                clientSocket.send("L".encode("utf-8"))
+            except:
+                connected = False
+                endTimer = -1
+                endText = "Player 1 disconnected"
 
         elif keys[controls[1]]:
-            clientSocket.send("R".encode("utf-8"))
+            try:
+                clientSocket.send("R".encode("utf-8"))
+            except:
+                connected = False
+                endTimer = -1
+                endText = "Player 1 disconnected"
 
         else:
-            clientSocket.send("False".encode("utf-8"))
+            try:
+                clientSocket.send("False".encode("utf-8"))
+            except:
+                connected = False
+                endTimer = -1
+                endText = "Player 1 disconnected"
 
         
 
@@ -221,5 +242,4 @@ def clientGame(textInput, controls):
         pygame.display.flip()
         dt = clock.tick(1000) / 1000
 
-    pygame.quit()
     return

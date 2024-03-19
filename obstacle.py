@@ -1,3 +1,5 @@
+#module for obstacle class
+
 import pygame
 import math
 import geofuncs
@@ -101,7 +103,7 @@ class obstacle(pygame.sprite.Sprite):
             normalLine = [[line[0]], [line[0][0], line[1][0] + 1]]
         radius = geofuncs.getSideLength(line)
         angle = math.acos(geofuncs.getCosAngleToPoint(normalLine, ballPos))
-        turnSpeed = radius * self.angularVelocity * math.cos(angle)
+        turnSpeed = radius * self.angularVelocity * math.sin(angle)
         turnVelocity = abs(turnSpeed) * normalBall
         return(turnVelocity)     
 

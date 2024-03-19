@@ -1,3 +1,5 @@
+#module for flipper subclass
+
 import pygame
 import math
 import geofuncs

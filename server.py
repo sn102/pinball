@@ -1,16 +1,21 @@
+#module for server game
+
+import pygame
 import socket
 import pygame
 import math
+import mapfuncs
+from endScreen import endScreen
+from buttons import *
+import socket
+from client import *
+from server import *
 from obstacle import obstacle
 from flipper import flipper
 from ball import ball
-import mapfuncs
-from buttons import menuButton
-from endScreen import endScreen
 import pickle
 
 def serverGame(controls):
-    #import stuff -TEMPORARY
     from obstacle import obstacle
     from flipper import flipper
     from ball import ball
@@ -29,6 +34,7 @@ def serverGame(controls):
     lineCount = 0
     endText = ""
     connecting = True
+    connected = True
 
 
 #-------NETWORKING START--------
@@ -115,7 +121,7 @@ def serverGame(controls):
 
     #create pinballs
     player1 = ball(40, "blue", (250, 250), pygame.Vector2(0, 0), GRAVITY, 1)
-    player2 = ball(40, "purple", (1030, 250), pygame.Vector2(0, 0), GRAVITY, 2)
+    player2 = ball(40, "red", (1030, 250), pygame.Vector2(0, 0), GRAVITY, 2)
     pinballGroup = pygame.sprite.Group()
     pinballGroup.add(player1)
     pinballGroup.add(player2)
@@ -133,10 +139,13 @@ def serverGame(controls):
     #---------NETWORKING------------
 
         #receive data from client
-        try:
-            dataReceived = connection.recv(1024).decode("utf-8")
-        except:
-            return
+        if connected:
+            try:
+                dataReceived = connection.recv(1024).decode("utf-8")
+            except:
+                connected = False
+                endTimer = -1
+                endText = "Player 2 disconnected"
         
         #send game data to client
         player1Data = [player1.getPosition(), player1.getVelocity(), player1.getScore()]
@@ -147,7 +156,13 @@ def serverGame(controls):
         gameDataList = [player1Data, player2Data, flipperData1, flipperData2, endTimer]
         sentGameData = pickle.dumps(gameDataList)
         if len(dataReceived) > 0: #check if client is responsive
-            connection.send(sentGameData)
+            if connected:
+                try:
+                    connection.send(sentGameData)
+                except:
+                    connected = False
+                    endTimer = -1
+                    endText = "Player 2 disconnected"
 
         screen.fill("white")
 
@@ -255,11 +270,7 @@ def serverGame(controls):
                 endTextSurf = font.render(endText, False, "black")
                 screen.blit(endTextSurf, (screen.get_width()/2-100, screen.get_height()/2))
 
-        #reset data received from client
-        #dataReceived = ""
-
         pygame.display.flip()
         dt = clock.tick(1000) / 1000
-
-    pygame.quit()
+        
     return

@@ -120,7 +120,7 @@ class ball(pygame.sprite.Sprite):
     
     #Methods
 
-    def bounceObstacle(self, obstacle):
+    def bounceObstacle(self, obstacle): #collision between two obstacles
         #lines
         line = obstacle.getCollisionSide(self.position)
         previousLine = self.currentLine
@@ -158,17 +158,17 @@ class ball(pygame.sprite.Sprite):
         velocityAway = normal * (appliedSpeedAway + obstacleSpeedToBall + obstacle.bounciness * 100)
 
         #output
-        self.velocity += depthVector * depthMagnitude
         if normal.dot(self.velocity - normal * (obstacleSpeedToBall)) < 0:
             self.velocity += velocityAway
             self.increaseScore(obstacle.getScoreValue()) # change score
-            #prevent ball from going too far inside obstacle
-            if (self.position - contactPoint).dot(normal) < 1:
-                self.position = contactPoint
-                self.position -= self.velocity
+        self.velocity +=  depthVector * depthMagnitude
+
+        #prevent ball from going too far inside obstacle
+        if (self.position - contactPoint).magnitude() > 1.2 * self.radius:
+            self.position -= 1.3 * self.radius * (self.position - contactPoint).normalize()
             
 
-    def bounceBall(self, ball2):
+    def bounceBall(self, ball2): #collision between two pinballs
         #lines
         vectorBetween = ball2.position - self.position
         if vectorBetween.dot(self.velocity) > 0 or vectorBetween.dot(ball2.velocity) < 0:
@@ -183,7 +183,7 @@ class ball(pygame.sprite.Sprite):
                 cosAngle2 = geofuncs.getCosAngleToPoint([ball2.position, ball2.position - ball2.velocity], self.position)
             appliedSpeed2 = ball2.velocity.magnitude() * cosAngle2
 
-            appliedSpeedAvg = (appliedSpeed + appliedSpeed2) / 2
+            appliedSpeedAvg = (self.velocity.magnitude() + ball2.velocity.magnitude()) / 2
             appliedVelocity = appliedSpeedAvg * vectorBetween
 
             self.velocity -= 2 * appliedVelocity

@@ -1,9 +1,12 @@
+#module for main menu
+
 import pygame
+import mapfuncs
 from buttons import *
 import socket
-from client import clientGame
-from server import serverGame
-
+from client import *
+from server import *
+import pickle
 
 def menu(screen):
     #init variables
@@ -19,22 +22,25 @@ def menu(screen):
     createGameButton = menuButton("red", "CREATE GAME", [screen.get_width()/2, 150])
     joinGameButton = menuButton("orange", "JOIN GAME", [screen.get_width()/2, 350])
     controlsButton = menuButton("green", "VIEW CONTROLS", [screen.get_width()/2, 550])
-    hostNameText = menuButton("black", "HOSTNAME: " +str(socket.gethostname()), [screen.get_width()/2, 50])
+    #hostNameText = menuButton("black", "HOSTNAME: " +str(socket.gethostname()), [screen.get_width()/2, 50])
+
     #join menu
     enterTextButton = menuButton("orange", textInput, [screen.get_width()/2, screen.get_height()/2])
     ipText = menuButton("black", "ENTER HOST ADDRESS", [screen.get_width()/2, 200])
+
     #controls menu
     adButton = menuButton("green", "A/D KEYS", [screen.get_width()/2, 250])
     lrButton = menuButton("red", "LEFT/RIGHT ARROWS", [screen.get_width()/2, 450])
+
     #other
     returnButton = menuButton("gray", "RETURN", [210,50])
     
     buttonGroup = pygame.sprite.Group()
-    buttonGroup.add(createGameButton, joinGameButton, controlsButton, hostNameText)
+    buttonGroup.add(createGameButton, joinGameButton, controlsButton)
 
     #subgroups for menus
     mainGroup = pygame.sprite.Group()
-    mainGroup.add(createGameButton, joinGameButton, controlsButton, hostNameText)
+    mainGroup.add(createGameButton, joinGameButton, controlsButton)
 
     joinGroup = pygame.sprite.Group()
     joinGroup.add(enterTextButton, ipText, returnButton)
@@ -46,14 +52,15 @@ def menu(screen):
         if mainMenu:
             screen.fill("black")
             for event in pygame.event.get():
-                #clicking buttons
+                if event.type == pygame.QUIT:
+                    inMenu = False
+                    
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()
                     if joinGameButton.getRect().collidepoint(mousePos):
                         mainMenu = False
                         joinGameMenu = True
 
-                        #replace buttons
                         buttonGroup.empty()
                         buttonGroup.add(joinGroup)
 
@@ -70,13 +77,15 @@ def menu(screen):
                         mainMenu = False
                         controlsMenu = True
 
-                        #replace buttons
                         buttonGroup.empty()
                         buttonGroup.add(controlsGroup)
 
                     
         if joinGameMenu:
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    inMenu = False
+                    
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()
                     if returnButton.getRect().collidepoint(mousePos):
@@ -93,20 +102,25 @@ def menu(screen):
                         textInput = textInput[:-1]
                     elif event.key == pygame.K_RETURN:
                         clientGame(textInput, controls)
+                        screen.fill("black")
                     else:
                         textInput += event.unicode
 
                     enterTextButton.setText(textInput)
 
         if controlsMenu:
+            if event.type == pygame.QUIT:
+                    inMenu = False
             for event in pygame.event.get():
-                #clicking buttons
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    #player chooses a and d keys
                     mousePos = pygame.mouse.get_pos()
                     if adButton.getRect().collidepoint(mousePos):
                         adButton.setColour("green")
                         lrButton.setColour("red")
                         controls = [pygame.K_a, pygame.K_d]
+
+                    #player chooses left and right arrow keys
                     elif lrButton.getRect().collidepoint(mousePos):
                         adButton.setColour("red")
                         lrButton.setColour("green")

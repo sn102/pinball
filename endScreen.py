@@ -1,3 +1,5 @@
+#gets text for endscreen
+
 def endScreen(pinballGroup):
     if pinballGroup.sprites()[0].getScore() > pinballGroup.sprites()[1].getScore():
         endText = ("Player 1 wins!")
