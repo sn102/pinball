@@ -26,7 +26,7 @@ def menu(screen):
 
     #join menu
     enterTextButton = menuButton("orange", textInput, [screen.get_width()/2, screen.get_height()/2])
-    ipText = menuButton("black", "ENTER HOST ADDRESS", [screen.get_width()/2, 200])
+    ipText = menuButton([0, 0, 1], "ENTER HOST ADDRESS:", [screen.get_width()/2, 200])
 
     #controls menu
     adButton = menuButton("green", "A/D KEYS", [screen.get_width()/2, 250])
@@ -90,6 +90,7 @@ def menu(screen):
                     mousePos = pygame.mouse.get_pos()
                     if returnButton.getRect().collidepoint(mousePos):
                         textInput = ""
+                        ipText.setText("ENTER HOST ADDRESS:")
                         enterTextButton.setText(textInput)
                         mainMenu = True
                         joinGameMenu = False
@@ -101,7 +102,14 @@ def menu(screen):
                     if event.key == pygame.K_BACKSPACE:
                         textInput = textInput[:-1]
                     elif event.key == pygame.K_RETURN:
-                        clientGame(textInput, controls)
+                        ipText.setText("CONNECTING...")
+                        buttonGroup.update()
+                        buttonGroup.draw(screen)
+                        pygame.display.flip()
+                        if clientGame(textInput, controls) == "failed":
+                            ipText.setText("CONNECTION FAILED")
+                        else:
+                            ipText.setText("ENTER HOST ADDRESS")
                         screen.fill("black")
                     else:
                         textInput += event.unicode

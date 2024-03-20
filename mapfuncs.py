@@ -16,11 +16,10 @@ def convertStringToList(string):
     return(newList)
             
 
-def checkCollideObstacle(pinballGroup, obstacleGroup):
-    for ball in pinballGroup:
+def checkCollideObstacle(ball, obstacleGroup, velocity):
         for obstacle in obstacleGroup:
             if pygame.sprite.collide_mask(ball, obstacle):
-                ball.bounceObstacle(obstacle)
+                ball.bounceObstacle(obstacle, velocity)
 
 
 def checkCollideBall(pinballGroup):

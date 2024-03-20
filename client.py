@@ -18,7 +18,6 @@ def clientGame(textInput, controls):
     from flipper import flipper
     from ball import ball
 
-    screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     running = True
     connected = True
@@ -40,10 +39,13 @@ def clientGame(textInput, controls):
     FLIPTIME = 0.2
     FLIPSPEED = 0.75 * math.pi
 
-    
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #192.168.1.109
-    clientSocket.connect((textInput, 5050))
+    try:
+        clientSocket.connect((textInput, 5050))
+    except:
+        return("failed")
+
+    screen = pygame.display.set_mode((1280, 720))
 
     clientSocket.send("True".encode("utf-8"))
     line = "True"
@@ -234,6 +236,8 @@ def clientGame(textInput, controls):
         else:
             if endText == "":
                 endText = endScreen(pinballGroup)
+            if len(pinballGroup) > 0:
+                pinballGroup.empty()
             else:
                 endTextSurf = font.render(endText, False, "black")
                 screen.blit(endTextSurf, (screen.get_width()/2-100, screen.get_height()/2))
@@ -242,4 +246,4 @@ def clientGame(textInput, controls):
         pygame.display.flip()
         dt = clock.tick(1000) / 1000
 
-    return
+    return("successful")

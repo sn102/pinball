@@ -179,6 +179,7 @@ def serverGame(controls):
         #ball physics and score
         if dt <= 0.05: #check for window dragging
             for ball in pinballGroup:
+                ball.prevPosition = ball.position
                 ball.setVelocity(ball.getVelocity() + (ball.getAcceleration() * dt))
                 ball.setPosition(ball.getPosition() + (ball.getVelocity() * dt))
                 ball.setAcceleration(pygame.Vector2(GRAVITY))
@@ -197,9 +198,10 @@ def serverGame(controls):
             
 
         #collision
-        mapfuncs.checkCollideObstacle(pinballGroup, obstacleGroup)
+        for ball in pinballGroup:
+            mapfuncs.checkCollideObstacle(ball, obstacleGroup, ball.getVelocity() * dt)
         mapfuncs.checkCollideBall(pinballGroup)
-            
+  
         #flipper controls
         keys = pygame.key.get_pressed()
         if keys[controls[0]] and P1FlipperL.getFlipState() == "":
@@ -266,6 +268,8 @@ def serverGame(controls):
         else:
             if endText == "":
                 endText = endScreen(pinballGroup)
+            if len(pinballGroup) > 0:
+                pinballGroup.empty()
             else:
                 endTextSurf = font.render(endText, False, "black")
                 screen.blit(endTextSurf, (screen.get_width()/2-100, screen.get_height()/2))
